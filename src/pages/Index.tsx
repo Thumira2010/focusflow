@@ -1,12 +1,112 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { PomodoroTimer } from "@/components/PomodoroTimer";
+import { MusicPlayer } from "@/components/MusicPlayer";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { BackgroundSelector } from "@/components/BackgroundSelector";
+import { MotivationalQuotes } from "@/components/MotivationalQuotes";
+import { AdPlaceholder } from "@/components/AdPlaceholder";
+import { Card } from "@/components/ui/card";
 
 const Index = () => {
+  const [currentTheme, setCurrentTheme] = useState<"starry" | "landscape" | "minimal">("starry");
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [isBreakTime, setIsBreakTime] = useState(false);
+
+  const backgroundClasses = {
+    starry: "bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900",
+    landscape: "bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900", 
+    minimal: "bg-gradient-to-br from-gray-100 via-slate-200 to-gray-300 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900"
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className={`min-h-screen transition-all duration-1000 ${backgroundClasses[currentTheme]}`}>
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-2 h-2 bg-neon-cyan rounded-full animate-float opacity-60"></div>
+        <div className="absolute top-40 right-32 w-1 h-1 bg-neon-pink rounded-full animate-float opacity-80" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-neon-purple rounded-full animate-float opacity-70" style={{animationDelay: '2s'}}></div>
       </div>
+
+      {/* Header */}
+      <header className="relative z-10 p-6">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-glow-primary">
+              <span className="text-primary-foreground font-bold text-lg">🎯</span>
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-neon bg-clip-text text-transparent">
+              Focus Flow
+            </h1>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <BackgroundSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+          
+          {/* Left Sidebar - Ad Space */}
+          <div className="lg:col-span-2 space-y-6">
+            <AdPlaceholder type="sidebar" />
+          </div>
+
+          {/* Center Content */}
+          <div className="lg:col-span-8 space-y-8">
+            
+            {/* Main Focus Card */}
+            <Card className="bg-gradient-glass backdrop-blur-glass border-glass-border shadow-glass p-8 animate-slide-up">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-foreground mb-2">
+                  {isTimerActive ? (isBreakTime ? "Break Time! 🧘‍♀️" : "Focus Mode! 🚀") : "Ready to Focus?"}
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  {isTimerActive ? (isBreakTime ? "Relax and recharge" : "Deep work session in progress") : "Start your productive session"}
+                </p>
+              </div>
+
+              {/* Pomodoro Timer */}
+              <div className="mb-8">
+                <PomodoroTimer 
+                  onStatusChange={(active, isBreak) => {
+                    setIsTimerActive(active);
+                    setIsBreakTime(isBreak);
+                  }}
+                />
+              </div>
+
+              {/* Music Player */}
+              <div className="mt-8">
+                <MusicPlayer isBreakTime={isBreakTime} />
+              </div>
+            </Card>
+
+            {/* Motivational Section */}
+            <MotivationalQuotes />
+            
+            {/* Bottom Ad Space */}
+            <AdPlaceholder type="footer" />
+          </div>
+
+          {/* Right Sidebar - Additional Ad Space */}
+          <div className="lg:col-span-2 space-y-6">
+            <AdPlaceholder type="sidebar" />
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 p-6 text-center">
+        <div className="bg-gradient-glass backdrop-blur-glass border-glass-border rounded-lg p-4 inline-block shadow-glass">
+          <p className="text-muted-foreground text-sm">
+            Built for focused minds ✨ | © 2024 Focus Flow
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
