@@ -16,5 +16,5 @@ export default defineConfig(({ mode }) => ({
     },
   },
   // 👇 Add this line
-  base: "/your-repo-name/", 
+  base: "focusflow-studynest", 
 }))
