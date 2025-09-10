@@ -16,5 +16,5 @@ export default defineConfig(({ mode }) => ({
     },
   },
   // 👇 Add this line
-  base: "focusflow-studynest", 
+  base: "/focusflow-studynest/", 
 }))
