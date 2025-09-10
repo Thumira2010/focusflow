@@ -5,15 +5,27 @@ import { Play, Pause, RotateCcw, Coffee, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface PomodoroTimerProps {
+  studyMode: 1 | 2 | 3;
   onStatusChange: (isActive: boolean, isBreak: boolean) => void;
+  onBreakStart: () => void;
 }
 
-export const PomodoroTimer = ({ onStatusChange }: PomodoroTimerProps) => {
-  const [minutes, setMinutes] = useState(25);
+export const PomodoroTimer = ({ studyMode, onStatusChange, onBreakStart }: PomodoroTimerProps) => {
+  const [minutes, setMinutes] = useState(() => {
+    const studyTime = studyMode === 1 ? 25 : studyMode === 2 ? 25 : 25;
+    return studyTime;
+  });
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
-  const [totalTime, setTotalTime] = useState(25 * 60);
+  const [totalTime, setTotalTime] = useState(() => {
+    const studyTime = studyMode === 1 ? 25 : studyMode === 2 ? 25 : 25;
+    return studyTime * 60;
+  });
+  const [currentSession, setCurrentSession] = useState(1);
+  const [totalSessions] = useState(() => {
+    return studyMode === 1 ? 2 : studyMode === 2 ? 4 : 6;
+  });
   const { toast } = useToast();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -35,24 +47,38 @@ export const PomodoroTimer = ({ onStatusChange }: PomodoroTimerProps) => {
           setIsActive(false);
           if (!isBreak) {
             // Work session finished, start break
+            onBreakStart();
             setIsBreak(true);
             setMinutes(5);
             setSeconds(0);
             setTotalTime(5 * 60);
             toast({
               title: "Work session complete! ✅",
-              description: "Time for a 5-minute break",
+              description: `Time for a 5-minute break (${currentSession}/${totalSessions})`,
             });
           } else {
-            // Break finished, ready for next work session
+            // Break finished, check if study mode is complete
             setIsBreak(false);
-            setMinutes(25);
-            setSeconds(0);
-            setTotalTime(25 * 60);
-            toast({
-              title: "Break time over! 🚀",
-              description: "Ready for your next focus session?",
-            });
+            if (currentSession < totalSessions) {
+              setCurrentSession(prev => prev + 1);
+              setMinutes(25);
+              setSeconds(0);
+              setTotalTime(25 * 60);
+              toast({
+                title: "Break over! 🚀",
+                description: `Ready for session ${currentSession + 1}/${totalSessions}?`,
+              });
+            } else {
+              // All sessions complete
+              setCurrentSession(1);
+              setMinutes(25);
+              setSeconds(0);
+              setTotalTime(25 * 60);
+              toast({
+                title: "Study mode complete! 🎉",
+                description: `You've finished all ${totalSessions} sessions!`,
+              });
+            }
           }
         }
       }, 1000);
@@ -75,14 +101,16 @@ export const PomodoroTimer = ({ onStatusChange }: PomodoroTimerProps) => {
 
   const resetTimer = () => {
     setIsActive(false);
+    setCurrentSession(1);
     if (isBreak) {
       setMinutes(5);
       setSeconds(0);
       setTotalTime(5 * 60);
     } else {
-      setMinutes(25);
+      const studyTime = studyMode === 1 ? 25 : studyMode === 2 ? 25 : 25;
+      setMinutes(studyTime);
       setSeconds(0);
-      setTotalTime(25 * 60);
+      setTotalTime(studyTime * 60);
     }
   };
 
@@ -162,7 +190,7 @@ export const PomodoroTimer = ({ onStatusChange }: PomodoroTimerProps) => {
         ) : (
           <>
             <Zap className="w-4 h-4 mr-2" />
-            Focus Session
+            Focus Session {currentSession}/{totalSessions}
           </>
         )}
       </div>

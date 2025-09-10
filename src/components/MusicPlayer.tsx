@@ -6,6 +6,8 @@ import { Slider } from "@/components/ui/slider";
 
 interface MusicPlayerProps {
   isBreakTime: boolean;
+  selectedTrack: number;
+  onTrackChange: (trackId: number) => void;
 }
 
 const playlists = {
@@ -22,15 +24,14 @@ const playlists = {
   ]
 };
 
-export const MusicPlayer = ({ isBreakTime }: MusicPlayerProps) => {
+export const MusicPlayer = ({ isBreakTime, selectedTrack, onTrackChange }: MusicPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
   const [volume, setVolume] = useState([75]);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [currentProgress, setCurrentProgress] = useState(23); // Simulated progress
 
   const currentPlaylist = isBreakTime ? playlists.break : playlists.focus;
-  const track = currentPlaylist[currentTrack];
+  const track = currentPlaylist[selectedTrack % currentPlaylist.length];
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -38,10 +39,16 @@ export const MusicPlayer = ({ isBreakTime }: MusicPlayerProps) => {
 
   const nextTrack = () => {
     if (shuffleMode) {
-      setCurrentTrack(Math.floor(Math.random() * currentPlaylist.length));
+      const newTrack = Math.floor(Math.random() * currentPlaylist.length);
+      onTrackChange(newTrack);
     } else {
-      setCurrentTrack((prev) => (prev + 1) % currentPlaylist.length);
+      const newTrack = (selectedTrack + 1) % currentPlaylist.length;
+      onTrackChange(newTrack);
     }
+  };
+
+  const selectTrack = (trackIndex: number) => {
+    onTrackChange(trackIndex);
   };
 
   const toggleShuffle = () => {
@@ -137,11 +144,37 @@ export const MusicPlayer = ({ isBreakTime }: MusicPlayerProps) => {
         <span className="text-sm text-muted-foreground w-8">{volume[0]}</span>
       </div>
 
+      {/* Playlist */}
+      <div className="mt-4 space-y-2 max-h-40 overflow-y-auto">
+        <h4 className="text-sm font-medium text-foreground mb-2">
+          {isBreakTime ? "Break Playlist" : "Focus Playlist"}
+        </h4>
+        {currentPlaylist.map((track, index) => (
+          <button
+            key={track.id}
+            onClick={() => selectTrack(index)}
+            className={`w-full text-left p-2 rounded-lg border transition-all duration-200 ${
+              index === selectedTrack % currentPlaylist.length
+                ? 'bg-primary/10 border-primary/30 text-primary'
+                : 'bg-muted/10 border-glass-border hover:bg-muted/20 text-foreground'
+            }`}
+          >
+            <div className="flex justify-between items-center">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{track.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+              </div>
+              <span className="text-xs text-muted-foreground ml-2">{track.duration}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
       {/* Playlist Info */}
       <div className="mt-4 text-center">
         <p className="text-xs text-muted-foreground">
           Playing from: {isBreakTime ? "Break Time Collection" : "Deep Focus Mix"} • 
-          Track {currentTrack + 1} of {currentPlaylist.length}
+          Track {(selectedTrack % currentPlaylist.length) + 1} of {currentPlaylist.length}
           {shuffleMode && " • Shuffle On"}
         </p>
       </div>

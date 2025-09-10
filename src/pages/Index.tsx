@@ -5,12 +5,18 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { BackgroundSelector } from "@/components/BackgroundSelector";
 import { MotivationalQuotes } from "@/components/MotivationalQuotes";
 import { AdPlaceholder } from "@/components/AdPlaceholder";
+import { MobileHeader } from "@/components/MobileHeader";
+import { StudyModeSelector } from "@/components/StudyModeSelector";
+import { BreakScreen } from "@/components/BreakScreen";
 import { Card } from "@/components/ui/card";
 
 const Index = () => {
   const [currentTheme, setCurrentTheme] = useState<"starry" | "landscape" | "minimal">("starry");
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [isBreakTime, setIsBreakTime] = useState(false);
+  const [studyMode, setStudyMode] = useState<1 | 2 | 3>(1);
+  const [showBreakScreen, setShowBreakScreen] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState<number>(0);
 
   const backgroundClasses = {
     starry: "bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900",
@@ -27,8 +33,8 @@ const Index = () => {
         <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-neon-purple rounded-full animate-float opacity-70" style={{animationDelay: '2s'}}></div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 p-6">
+      {/* Desktop Header */}
+      <header className="hidden lg:block relative z-10 p-6">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-glow-primary">
@@ -46,42 +52,71 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Mobile Header */}
+      <MobileHeader 
+        currentTheme={currentTheme}
+        onThemeChange={setCurrentTheme}
+      />
+
+      {/* Break Screen Overlay */}
+      {showBreakScreen && (
+        <BreakScreen 
+          onClose={() => setShowBreakScreen(false)}
+          studyMode={studyMode}
+        />
+      )}
+
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+      <main className="container mx-auto px-4 lg:px-6 py-4 lg:py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 lg:gap-8 max-w-7xl mx-auto">
           
-          {/* Left Sidebar - Ad Space */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Left Sidebar - Ad Space (Hidden on mobile) */}
+          <div className="hidden xl:block xl:col-span-2 space-y-6">
             <AdPlaceholder type="sidebar" />
           </div>
 
           {/* Center Content */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="xl:col-span-8 space-y-6 lg:space-y-8">
             
-            {/* Main Focus Card */}
-            <Card className="bg-gradient-glass backdrop-blur-glass border-glass-border shadow-glass p-8 animate-slide-up">
-              <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-foreground mb-2">
+            {/* Study Mode Selector */}
+            <StudyModeSelector 
+              currentMode={studyMode}
+              onModeChange={setStudyMode}
+            />
+            
+            {/* Main Focus Card - Timer and Music Side by Side */}
+            <Card className="bg-gradient-glass backdrop-blur-glass border-glass-border shadow-glass p-4 lg:p-8 animate-slide-up">
+              <div className="text-center mb-6 lg:mb-8">
+                <h2 className="text-2xl lg:text-4xl font-bold text-foreground mb-2">
                   {isTimerActive ? (isBreakTime ? "Break Time! 🧘‍♀️" : "Focus Mode! 🚀") : "Ready to Focus?"}
                 </h2>
-                <p className="text-muted-foreground text-lg">
+                <p className="text-muted-foreground text-base lg:text-lg">
                   {isTimerActive ? (isBreakTime ? "Relax and recharge" : "Deep work session in progress") : "Start your productive session"}
                 </p>
               </div>
 
-              {/* Pomodoro Timer */}
-              <div className="mb-8">
-                <PomodoroTimer 
-                  onStatusChange={(active, isBreak) => {
-                    setIsTimerActive(active);
-                    setIsBreakTime(isBreak);
-                  }}
-                />
-              </div>
+              {/* Timer and Music Player Side by Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                {/* Pomodoro Timer */}
+                <div className="order-2 lg:order-1">
+                  <PomodoroTimer 
+                    studyMode={studyMode}
+                    onStatusChange={(active, isBreak) => {
+                      setIsTimerActive(active);
+                      setIsBreakTime(isBreak);
+                    }}
+                    onBreakStart={() => setShowBreakScreen(true)}
+                  />
+                </div>
 
-              {/* Music Player */}
-              <div className="mt-8">
-                <MusicPlayer isBreakTime={isBreakTime} />
+                {/* Music Player */}
+                <div className="order-1 lg:order-2">
+                  <MusicPlayer 
+                    isBreakTime={isBreakTime}
+                    selectedTrack={selectedTrack}
+                    onTrackChange={setSelectedTrack}
+                  />
+                </div>
               </div>
             </Card>
 
@@ -92,8 +127,8 @@ const Index = () => {
             <AdPlaceholder type="footer" />
           </div>
 
-          {/* Right Sidebar - Additional Ad Space */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Right Sidebar - Additional Ad Space (Hidden on mobile) */}
+          <div className="hidden xl:block xl:col-span-2 space-y-6">
             <AdPlaceholder type="sidebar" />
           </div>
         </div>
